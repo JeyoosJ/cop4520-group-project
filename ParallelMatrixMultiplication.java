@@ -3,6 +3,7 @@ import java.util.concurrent.RecursiveTask;
 
 public class ParallelMatrixMultiplication {
 
+    // using fork join frameworking for divide and conquer
     private static final ForkJoinPool pool = new ForkJoinPool();
 
     public static void main(String[] args) {
@@ -33,8 +34,9 @@ public class ParallelMatrixMultiplication {
         return result;
     }
 
+    // sub class that is extending recursive tasks, part of divide and conquer using fork join
     static class MultiplyTask extends RecursiveTask<Void> {
-        private static final int THRESHOLD = 10; // Adjust as needed
+        private static final int THRESHOLD = 10;
 
         private final int[][] matrixA;
         private final int[][] matrixB;
@@ -44,6 +46,7 @@ public class ParallelMatrixMultiplication {
         private final int startCol;
         private final int endCol;
 
+        // overloaded constructor
         MultiplyTask(int[][] matrixA, int[][] matrixB, int[][] result,
                 int startRow, int endRow, int startCol, int endCol) {
             this.matrixA = matrixA;
@@ -58,7 +61,7 @@ public class ParallelMatrixMultiplication {
         @Override
         protected Void compute() {
             if ((endRow - startRow) < THRESHOLD || (endCol - startCol) < THRESHOLD) {
-                // Perform traditional matrix multiplication for small submatrices
+                // using normal matrix multiplication for small submatrices
                 for (int i = startRow; i < endRow; i++) {
                     for (int j = startCol; j < endCol; j++) {
                         for (int k = 0; k < matrixB.length; k++) {
@@ -67,7 +70,7 @@ public class ParallelMatrixMultiplication {
                     }
                 }
             } else {
-                // Split the matrices into submatrices and fork new tasks
+                // since matrix is above threshold size continue to divide and conquer
                 int midRow = (startRow + endRow) / 2;
                 int midCol = (startCol + endCol) / 2;
 
