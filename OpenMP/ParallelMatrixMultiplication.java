@@ -4,16 +4,25 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 public class ParallelMatrixMultiplication {
-    // NEED TO TEST WITH LARGER MATRICES STILL
-
-    // using fork join frameworking for divide and conquer
     private static final ForkJoinPool pool = new ForkJoinPool();
+    private static int MATRIX_SIZE = 250;
+
 
     public static void main(String[] args) {
-        int[][] matrixA = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } };
-        int[][] matrixB = { { 9, 8, 7 }, { 6, 5, 4 }, { 3, 2, 1 } };
+        int[][] matrixA = new int[MATRIX_SIZE][MATRIX_SIZE];
+        int[][] matrixB = new int[MATRIX_SIZE][MATRIX_SIZE];
 
+        // Populate matrixA and matrixB with sample values
+        for (int i = 0; i < MATRIX_SIZE; i++) {
+            for (int j = 0; j < MATRIX_SIZE; j++) {
+                matrixA[i][j] = i * MATRIX_SIZE + j + 1;
+                matrixB[i][j] = (MATRIX_SIZE - i) * MATRIX_SIZE + (MATRIX_SIZE - j);
+            }
+        }
+
+        long startTime = System.currentTimeMillis();
         int[][] result = multiplyMatrices(matrixA, matrixB);
+        long endTime = System.currentTimeMillis();
 
         // Print the result matrix
         for (int i = 0; i < result.length; i++) {
@@ -22,6 +31,9 @@ public class ParallelMatrixMultiplication {
             }
             System.out.println();
         }
+
+        // Print total runtime
+        System.out.println("Total runtime: " + (endTime - startTime) + " milliseconds");
     }
 
     public static int[][] multiplyMatrices(int[][] matrixA, int[][] matrixB) {
@@ -37,7 +49,6 @@ public class ParallelMatrixMultiplication {
         return result;
     }
 
-    // sub class that is extending recursive tasks, part of divide and conquer using fork join
     static class MultiplyTask extends RecursiveTask<Void> {
         private static final int THRESHOLD = 10;
 
@@ -49,9 +60,8 @@ public class ParallelMatrixMultiplication {
         private final int startCol;
         private final int endCol;
 
-        // overloaded constructor
         MultiplyTask(int[][] matrixA, int[][] matrixB, int[][] result,
-                int startRow, int endRow, int startCol, int endCol) {
+                     int startRow, int endRow, int startCol, int endCol) {
             this.matrixA = matrixA;
             this.matrixB = matrixB;
             this.result = result;
@@ -64,7 +74,6 @@ public class ParallelMatrixMultiplication {
         @Override
         protected Void compute() {
             if ((endRow - startRow) < THRESHOLD || (endCol - startCol) < THRESHOLD) {
-                // using normal matrix multiplication for small submatrices
                 for (int i = startRow; i < endRow; i++) {
                     for (int j = startCol; j < endCol; j++) {
                         for (int k = 0; k < matrixB.length; k++) {
@@ -73,7 +82,6 @@ public class ParallelMatrixMultiplication {
                     }
                 }
             } else {
-                // since matrix is above threshold size continue to divide and conquer
                 int midRow = (startRow + endRow) / 2;
                 int midCol = (startCol + endCol) / 2;
 
